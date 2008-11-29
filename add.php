@@ -55,7 +55,7 @@ $description = 'fixme';
         });
 
         if(typeof(Firefogg) == 'undefined') {
-          alert('You dont have Firefoog, plese go to http://firefogg.org to install it');
+          alert('You dont have Firefogg, plese go to http://firefogg.org to install it');
           document.location.href = 'http://firefogg.org';
         }
         var ogg = new Firefogg();
