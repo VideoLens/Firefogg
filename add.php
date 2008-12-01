@@ -4,27 +4,10 @@ $videoId = $_GET['id'];
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
   $title = $_POST['title'];
   $description = $_POST['description'];
+  //save video from $_FILE['video']
   $videoId = 'fixme';
   $videoUrl = "video.php?id=" . $videoId;
-  $url = "add.php?id=" . $videoId;
-  echo '{"result": "ok", "video_put_url": "'. $url .'", "video_url": "'. $videoUrl .'"}';
-  exit();
-}
-else if($_SERVER['REQUEST_METHOD'] == 'PUT') {
-  $fname = 'videos/' . $videoId . '.ogv';
-  if(file_exists($fname)) {
-    echo '{"result": "failed"}';
-    exit();
-  }
-  $fp = fopen($fname, "w");
-  $putdata = fopen("php://input", "r");
-  while ($data = fread($putdata, 1024))
-    fwrite($fp, $data);
-
-  /* Close the streams */
-  fclose($fp);
-  fclose($putdata);
-  echo '{"result": "ok"}';
+  echo '{"result": "ok", "video_url": "'. $videoUrl .'"}';
   exit();
 }
 
@@ -55,7 +38,7 @@ $description = 'fixme';
         });
 
         if(typeof(Firefogg) == 'undefined') {
-          alert('You dont have Firefogg, plese go to http://firefogg.org to install it');
+          alert('You dont have Firefogg, please go to http://firefogg.org to install it');
           document.location.href = 'http://firefogg.org';
         }
         var ogg = new Firefogg();
@@ -68,19 +51,17 @@ $description = 'fixme';
         }
 
         function submitForm() {
-          var data = $('#addVideo').serializeArray();
-          var callback = function(json) {
-            if(json.result == 'ok') {
-              $('#addVideo').hide();
-              $('#progress').show();
-              encode_and_upload(json.video_put_url, json.video_url);  
-            } else {
-              alert('please fix form data');
-            }
-          };
-          $.post(window.location.href, data, callback, "json");
+          var _data = $('#addVideo').serializeArray();
+          var data = {}
+          $(_data).each(function() {
+            data[this.name] = this.value;
+          })
+          $('#addVideo').hide();
+          $('#progress').show();
+
+          encode_and_upload(window.location.href, data);  
         }
-        function encode_and_upload(uploadUrl, videoUrl) {
+        function encode_and_upload(postUrl, data) {
           var options = JSON.stringify({'maxSize': 320, 'videoBitrate': 500});
           ogg.encode(options);
           var encodingStatus = function() {
@@ -98,7 +79,7 @@ $description = 'fixme';
             }
             //encoding sucessfull, state can also be 'encoding failed'
             else if (ogg.state == 'encoding done') {
-              ogg.upload(uploadUrl);
+              ogg.upload(postUrl, 'video', JSON.stringify(data));
               var uploadStatus = function() {
                 var status = ogg.status();
                 var progress = ogg.progress();
