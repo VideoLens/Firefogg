@@ -1,13 +1,38 @@
 <?php
+
 $videoId = $_GET['id'];
 
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
   $title = $_POST['title'];
   $description = $_POST['description'];
-  //save video from $_FILE['video']
-  $videoId = 'fixme';
-  $videoUrl = "video.php?id=" . $videoId;
-  echo '{"result": "ok", "video_url": "'. $videoUrl .'"}';
+  if($title) {
+    $uploadUrl = 'add.php?videoId=' . $videoId;
+    echo '{"result": 1, "uploadUrl": "'. $uploadUrl .'"}';
+  }
+  else if {
+    //save video
+    $videoId = 'fixme';
+    $filename = 'video/' . $videoId . '.ogv';
+    if($_FILES['chunk']['error'] == UPLOAD_ERR_OK) {
+      $chunk = fopen($_FILES['chunk']['tmp_name'], 'r');
+      if(!file_exists($filename)) {
+        $f = fopen($filename, 'w');
+      } else {
+        $f = fopen($filename, 'a');
+      }
+      
+      while ($data = fread($chunk, 1024))
+        fwrite($f, $data);
+      fclose($f);
+      if($_POST['done'] == 1) {
+        $resultUrl = "video.php?id=" . $videoId;
+        echo '{"result": 1, "done": 1, "resultUrl": "'. $resultUrl .'"}';
+      }
+      else
+        echo '{"result": 1}';
+    }
+        echo '{"result": -1}';
+  }
   exit();
 }
 
@@ -62,9 +87,9 @@ $description = 'fixme';
           encode_and_upload(window.location.href, data);  
         }
         function encode_and_upload(postUrl, data) {
-          var options = JSON.stringify({'maxSize': 320, 'videoBitrate': 500});
-          ogg.encode(options);
-          var encodingStatus = function() {
+          var options = JSON.stringify({'maxSize': 32ß, 'videoBitrate': 500});
+          ogg.upload(options, postUrl, JSON.stringify(data));
+          var updateStatus = function() {
             var status = ogg.status();
             var progress = ogg.progress();
 
@@ -74,35 +99,20 @@ $description = 'fixme';
             $('#progressstatus').html(parseInt(progress*100) + '% - ' + status);
 
             //loop to get new status if still encoding
-            if(ogg.state == 'encoding') {
-              setTimeout(encodingStatus, 500);
+            if(ogg.state == 'encoding' || ogg.state == 'uploading') {
+              setTimeout(updateStatus, 500);
             }
-            //encoding sucessfull, state can also be 'encoding failed'
-            else if (ogg.state == 'encoding done') {
-              ogg.upload(postUrl, 'video', JSON.stringify(data));
-              var uploadStatus = function() {
-                var status = ogg.status();
-                var progress = ogg.progress();
-
-                //do something with status and progress, i.e. set progressbar width:
-                var progressbar = document.getElementById('progressbar');
-                progressbar.style.width= parseInt(progress*200) +'px';
-                $('#progressstatus').html(parseInt(progress*100) + '% - ' + status);
-
-                //loop to get new status if still uploading
-                if(ogg.state == 'uploading') {
-                  setTimeout(uploadStatus, 500);
-                }
-                //upload sucessfull, state can also be 'upload failed'
-                else if(ogg.state == 'upload done') {
-                  progressbar.innerHTML = 'Upload done.';
-                  document.location.href = videoUrl;
-                }
+            //encoding and upload sucessfull, could can also be 'encoding failed'
+            else if (ogg.state == 'done') {
+              if(ogg.resultUrl)
+                document.location.href = ogg.resultUrl;
+              else {
+                alert('upload failed');
+                alert(ogg.responseText);
               }
-              uploadStatus();
             }
           }
-          encodingStatus()
+          updateStatus()
         }
       </script>
   </head>
