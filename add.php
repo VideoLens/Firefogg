@@ -7,7 +7,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
   $description = $_POST['description'];
   if($title) {
     $uploadUrl = 'add.php?videoId=' . $videoId;
-    echo '{"result": 1, "uploadUrl": "'. $uploadUrl .'"}';
+    echo json_encode(array('result' => 1, 'uploadUrl' => $uploadUrl));
   }
   else if {
     //save video
@@ -26,12 +26,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
       fclose($f);
       if($_POST['done'] == 1) {
         $resultUrl = "video.php?id=" . $videoId;
-        echo '{"result": 1, "done": 1, "resultUrl": "'. $resultUrl .'"}';
+        echo json_encode(array('result' => 1, 'done' => 1, 'resultUrl' => $resultUrl));
       }
       else
-        echo '{"result": 1}';
+        echo json_encode(array('result' => 1));
     }
-        echo '{"result": -1}';
+        echo json_encode(array('result' => -1));
   }
   exit();
 }
