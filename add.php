@@ -87,7 +87,7 @@ $description = 'fixme';
           encode_and_upload(window.location.href, data);  
         }
         function encode_and_upload(postUrl, data) {
-          var options = JSON.stringify({'maxSize': 32ß, 'videoBitrate': 500});
+          var options = JSON.stringify({'maxSize': 32, 'videoBitrate': 500});
           ogg.upload(options, postUrl, JSON.stringify(data));
           var updateStatus = function() {
             var status = ogg.status();
