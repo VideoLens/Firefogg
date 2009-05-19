@@ -1,18 +1,20 @@
 <?php
 
 $videoId = $_GET['id'];
+$add_php = 'http://' . $_SERVER['SERVER_NAME'] .  $_SERVER['PHP_SELF'];
 
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
   $title = $_POST['title'];
   $description = $_POST['description'];
-  if($title) {
-    $uploadUrl = 'add.php?videoId=' . $videoId;
+  if ($title) {
+    $videoId = 'fixme';
+    $uploadUrl = $add_php . '?videoId=' . $videoId;
     echo json_encode(array('result' => 1, 'uploadUrl' => $uploadUrl));
   }
-  else if {
+  else {
     //save video
     $videoId = 'fixme';
-    $filename = 'video/' . $videoId . '.ogv';
+    $filename = 'videos/' . $videoId . '.ogv';
     if($_FILES['chunk']['error'] == UPLOAD_ERR_OK) {
       $chunk = fopen($_FILES['chunk']['tmp_name'], 'r');
       if(!file_exists($filename)) {
@@ -20,18 +22,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
       } else {
         $f = fopen($filename, 'a');
       }
-      
       while ($data = fread($chunk, 1024))
         fwrite($f, $data);
       fclose($f);
       if($_POST['done'] == 1) {
-        $resultUrl = "video.php?id=" . $videoId;
+        $resultUrl = str_replace('add.php', 'video.php', $add_php) . "?id=" . $videoId;
         echo json_encode(array('result' => 1, 'done' => 1, 'resultUrl' => $resultUrl));
       }
-      else
+      else {
         echo json_encode(array('result' => 1));
+      }
+    } else {
+      echo json_encode(array('result' => -1));
     }
-        echo json_encode(array('result' => -1));
   }
   exit();
 }
@@ -87,7 +90,7 @@ $description = 'fixme';
           encode_and_upload(window.location.href, data);  
         }
         function encode_and_upload(postUrl, data) {
-          var options = JSON.stringify({'maxSize': 32, 'videoBitrate': 500});
+          var options = JSON.stringify({'maxSize': 320, 'videoBitrate': 500});
           ogg.upload(options, postUrl, JSON.stringify(data));
           var updateStatus = function() {
             var status = ogg.status();
